@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Manager Pro</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 { text-align: center; margin-bottom: 1.5rem; }
+
+    /* Form Styling */
+    .form-group {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 2rem;
+    }
+
+    input {
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    button {
+      cursor: pointer;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-add {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-add:hover { background: var(--primary-hover); }
+
+    /* List Styling */
+    ul { list-style: none; padding: 0; }
+
+    li {
+      background: #f1f5f9;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .student-info b { display: block; font-size: 1.1rem; }
+    .student-info span { color: #64748b; font-size: 0.9rem; }
+
+    .actions { display: flex; gap: 8px; }
+
+    .btn-edit { background: #e2e8f0; color: #475569; }
+    .btn-delete { background: #fee2e2; color: var(--danger); }
+    .btn-delete:hover { background: var(--danger); color: white; }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎓 Student Manager</h1>
+
+  <div class="form-group">
+    <input id="name" placeholder="Full Name" />
+    <input id="age" type="number" placeholder="Age" />
+    <input id="course" placeholder="Course Name" />
+    <button class="btn-add" onclick="addStudent()">Add Student</button>
+  </div>
+
+  <hr>
+
+  <h2>Students List</h2>
+  <ul id="list">
+    </ul>
+</div>
+
+<script>
+  const API = "http://localhost:3000/students";
+
+  async function fetchStudents() {
+    const res = await fetch(API);
+    const data = await res.json();
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    data.forEach(student => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="student-info">
+          <b>${student.name}</b>
+          <span>Age: ${student.age} | ${student.course}</span>
+        </div>
+        <div class="actions">
+          <button class="btn-edit" onclick="updateStudent('${student._id}')">Update</button>
+          <button class="btn-delete" onclick="deleteStudent('${student._id}')">Delete</button>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  async function addStudent() {
+    const name = document.getElementById("name").value;
+    const age = parseInt(document.getElementById("age").value);
+    const course = document.getElementById("course").value;
+
+    if(!name || !age || !course) return alert("Please fill all fields");
+
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, age, course })
+    });
+
+    // Clear inputs
+    document.querySelectorAll('input').forEach(i => i.value = '');
+    fetchStudents();
+  }
+
+  async function deleteStudent(id) {
+    if(confirm("Are you sure?")) {
+      await fetch(`${API}/${id}`, { method: "DELETE" });
+      fetchStudents();
+    }
+  }
+
+  async function updateStudent(id) {
+    const newAge = prompt("Enter new age:");
+    if (!newAge) return;
+
+    await fetch(`${API}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ age: parseInt(newAge) })
+    });
+    fetchStudents();
+  }
+
+  fetchStudents();
+</script>
+
+</body>
+</html>
