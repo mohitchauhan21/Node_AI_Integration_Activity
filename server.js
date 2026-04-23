@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 import { MongoClient, ObjectId } from "mongodb";
 
-const app = express();   // ✅ FIRST create app
+const app = express();
 
-app.use(cors());         // ✅ THEN use middleware
+app.use(cors());
 app.use(express.json());
 
 const url = "mongodb://localhost:27017";
